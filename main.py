@@ -59,6 +59,7 @@ async def add_desc(message: types.Message):
         return message.reply("❌Введите правильно описание.Например: /addesc <описание>")
 
     await r.rpush(PHRASES_KEY , text) #добавляет в конце списка памяти рЕдис
+    await r.persist(PHRASES_KEY) #гарантирует что LLT бесконечный будет
     await message.answer("Описание успешно добавлено✅")
 
 
@@ -170,6 +171,7 @@ async def route_descriptions():
         try:
             await bot.set_chat_description(chat_id=CHANNEL_ID, description=descs) #меняем описание
             await r.lpush(PHRASES_KEY , descs) #Добаволяется в начале списка
+            await r.persist(PHRASES_KEY)
 
         except Exception as e:
 
