@@ -160,24 +160,18 @@ async def set_time(message: types.Message):
 
 
 
+
 async def route_descriptions():
     while True:
-
         interval = int(await r.get(TIMER_KEY) or 6 * 60 * 60) #время по девофлту стоит 6 часов!
-        descs = await r.rpop(PHRASES_KEY) #Удаляется с конца
+        descs = await r.rpoplpush(PHRASES_KEY , PHRASES_KEY) #перемещается с конца в начало списка
         if not descs:
             await asyncio.sleep(3600) #проверка изменений через час
             continue
         try:
             await bot.set_chat_description(chat_id=CHANNEL_ID, description=descs) #меняем описание
-            await r.lpush(PHRASES_KEY , descs) #Добаволяется в начале списка
-            await r.persist(PHRASES_KEY)
-
         except Exception as e:
-
             print(f"Error updating channel description: {e}")
-
-   
         await asyncio.sleep(interval) #Временной интервал
 
 
