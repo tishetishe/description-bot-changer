@@ -100,6 +100,9 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 
     arg = command.args
 
+    if not arg:
+        return await message.reply("❌Вы ввели команду неверно.\n Введите корректно команду , например: /deldesc <номер>")
+
     if not arg.isdigit():
         return await message.reply("❌Вы ввели команду неверно.\n Введите корректно команду , например: /deldesc <номер>")
 
