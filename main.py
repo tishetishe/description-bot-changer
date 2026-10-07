@@ -44,9 +44,6 @@ async def help_cmd(message: Message):
 @dp.message(Command("addesc") , F.from_user.id == ADMIN_ID)
 async def add_desc(message: Message , command: CommandObject):
 
-    if not command.args:
-        return await message.reply("❌Введите правильно описание.Например: /addesc <описание>")
-
     text = command.args.strip().lower() #удаляет пробелы в начале и в конце и выводит только текст(без команды)
 
     if not text:
@@ -91,18 +88,15 @@ async def del_decsriprion(message: Message):
 async def del_all_decsriprion(message: Message):
 
     descs = await r.delete(PHRASES_KEY)
+
     if not descs:
         return await message.reply("Ваш список на данный момент итак пуст") 
     await message.answer("⚠️Ваш список полностью удален")
 
 
 
-
 @dp.message(Command("deldesc") , F.from_user.id == ADMIN_ID)
 async def enumerate_del_cmd(message: Message , command: CommandObject):
-
-    if not command.args:
-        return await message.reply("❌ Вы ввели команду неверно.\nВведите корректно команду, например: /deldesc <номер>")
 
     arg = command.args.strip().lower()
 
@@ -133,13 +127,13 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 async def set_time(message: Message , command: CommandObject):
     
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #получаем список от начала до конца
+    arg = command.args.strip().lower() #возвращает то что написано после команды 
+
     if not descs:
         return await message.reply("❌Ваш список пуст")
 
     if not arg:
         return await message.answer("❌Введите правильный формат: /setime 6h(или 30m, 1h, 10s)")
-
-    arg = command.args.strip().lower() #возвращает то что написано после команды 
 
     multipliers = {"s" : 1, "m" : 60 , "h": 3600} #таблица перевода в секунды по ключевому значению
 
