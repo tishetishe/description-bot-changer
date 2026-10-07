@@ -1,14 +1,16 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 
 def keyboardpanel() -> ReplyKeyboardMarkup:
-	kb = ReplyKeyboardMarkup(resize_keyboard=True)
+	builder = ReplyKeyboardMarkup()
 
 	btn1 = KeyboardButton("🗒Вывод всех описаний")
 	btn2 = KeyboardButton("❌Удалить последнее описание")
 	btn3 = KeyboardButton("🗑Удалить все описания")
 
-	kb.add(btn1).add(btn2).add(btn3)
+	builder.add(btn1 , btn2 , btn3)
+
+	builder.adjust(1) #рапсположить кнопки в ряд
 		
-	return kb
+	return builder.as_markup(resize_keyboard=True)
