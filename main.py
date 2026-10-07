@@ -44,7 +44,7 @@ async def help_cmd(message: Message):
 @dp.message(Command("addesc") , F.from_user.id == ADMIN_ID)
 async def add_desc(message: Message , command: CommandObject):
 
-    text = command.args.strip().lower() #удаляет пробелы в начале и в конце и выводит только текст(без команды)
+    text = command.args.lower() #удаляет пробелы в начале и в конце и выводит только текст(без команды)
 
     if not text:
         return await message.reply("❌Введите правильно описание.Например: /addesc <описание>")
@@ -98,7 +98,7 @@ async def del_all_decsriprion(message: Message):
 @dp.message(Command("deldesc") , F.from_user.id == ADMIN_ID)
 async def enumerate_del_cmd(message: Message , command: CommandObject):
 
-    arg = command.args.strip().lower()
+    arg = command.args.lower()
 
     if not arg.isdigit():
         return await message.reply("❌Вы ввели команду неверно.\n Введите корректно команду , например: /deldesc <номер>")
@@ -127,7 +127,7 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 async def set_time(message: Message , command: CommandObject):
     
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #получаем список от начала до конца
-    arg = command.args.strip().lower() #возвращает то что написано после команды 
+    arg = command.args.lower() #возвращает то что написано после команды 
 
     if not descs:
         return await message.reply("❌Ваш список пуст")
