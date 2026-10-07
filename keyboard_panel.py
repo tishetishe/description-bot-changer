@@ -5,9 +5,9 @@ from aiogram.utils.keyboard import ReplyKeyboardBuilder
 def keyboardpanel() -> ReplyKeyboardMarkup:
 	builder = ReplyKeyboardBuilder()
 
-	btn1 = KeyboardButton("🗒Вывод всех описаний")
-	btn2 = KeyboardButton("❌Удалить последнее описание")
-	btn3 = KeyboardButton("🗑Удалить все описания")
+	btn1 = KeyboardButton(text="🗒Вывод всех описаний")
+	btn2 = KeyboardButton(text="❌Удалить последнее описание")
+	btn3 = KeyboardButton(text="🗑Удалить все описания")
 
 	builder.add(btn1 , btn2 , btn3)
 
