@@ -14,7 +14,7 @@ load_dotenv("secret.env")
 
 
 API_TOKEN = os.getenv("API_TOKEN") #токен вашего бота
-CHANNEL_ID = os.getenv("CHANNEL_ID") #ваш канал/группа
+CHANNEL_ID = os.getenv("CHANNEL_ID") #ваш канал/группа(указывать в env через @ вместо t.me!)
 ADMIN_ID = int(os.getenv("ADMIN_ID")) #айди админа(вообще есть автоматическая функция , ну да ладно)
 
 
@@ -43,9 +43,12 @@ async def help_cmd(message: Message):
 
 @dp.message(Command("addesc") , F.from_user.id == ADMIN_ID)
 async def add_desc(message: Message , command: CommandObject):
- 
-    text = command.args #удаляет пробелы в начале и в конце и выводит только текст(без команды)
-    
+
+    if not command.args:
+        return await message.reply("❌Введите правильно описание.Например: /addesc <описание>")
+
+    text = command.args.strip().lower() #удаляет пробелы в начале и в конце и выводит только текст(без команды)
+
     if not text:
         return await message.reply("❌Введите правильно описание.Например: /addesc <описание>")
 
@@ -60,8 +63,10 @@ async def add_desc(message: Message , command: CommandObject):
 async def list_desc(message: Message):
     
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала до конца списка
+
     if not descs:
         return await message.reply("Ваш список пуст")
+
     text = "\n".join(f"{i+1}. {d}" for i , d in enumerate(descs))
     await message.answer(text)
 
@@ -73,8 +78,10 @@ async def list_desc(message: Message):
 async def del_decsriprion(message: Message):
     
     descs = await r.rpop(PHRASES_KEY)
+
     if not descs:
         return await message.reply("Ваш список на данный момент пуст")
+
     await message.answer("⚠️Ваше последние описание удалено")
 
 
@@ -94,7 +101,10 @@ async def del_all_decsriprion(message: Message):
 @dp.message(Command("deldesc") , F.from_user.id == ADMIN_ID)
 async def enumerate_del_cmd(message: Message , command: CommandObject):
 
-    arg = command.args
+    if not command.args:
+        return await message.reply("❌ Вы ввели команду неверно.\nВведите корректно команду, например: /deldesc <номер>")
+        
+    arg = command.args.strip().lower()
 
     if not arg.isdigit():
         return await message.reply("❌Вы ввели команду неверно.\n Введите корректно команду , например: /deldesc <номер>")
@@ -102,8 +112,10 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
     index = int(arg) - 1 #что бы не шло с 0, а еденицы 
 
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала до конца списка
+
     if not descs:
         return await message.reply("❌Ваш список пуст")
+
     if index < 0 or index > len(descs):
         return await message.reply("❌У вас нет описания с таким номером")
 
@@ -118,16 +130,16 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 
 
 @dp.message(Command("setime"), F.from_user.id == ADMIN_ID)
-async def set_time(message: Message):
+async def set_time(message: Message , command: CommandObject):
     
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #получаем список от начала до конца
     if not descs:
         return await message.reply("❌Ваш список пуст")
 
-    arg = message.get_args().strip().lower() #возвращает то что написано после команды 
-
     if not arg:
         return await message.answer("❌Введите правильный формат: /setime 6h(или 30m, 1h, 10s)")
+
+    arg = command.args.strip().lower() #возвращает то что написано после команды 
 
     multipliers = {"s" : 1, "m" : 60 , "h": 3600} #таблица перевода в секунды по ключевому значению
 
@@ -141,7 +153,10 @@ async def set_time(message: Message):
 
 
 
- #return await message.reply("❌У вас недостаточно прав.Только пользователи с правами администратора имеют доступ к этой команде")
+@dp.message(Command())
+async def def_user_msg(message: Message):
+    await message.reply("❌У вас недостаточно прав.Только пользователи с правами администратора имеют доступ к этой команде")
+
 
 
 async def route_descriptions():
