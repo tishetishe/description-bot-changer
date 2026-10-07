@@ -103,7 +103,7 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 
     if not command.args:
         return await message.reply("❌ Вы ввели команду неверно.\nВведите корректно команду, например: /deldesc <номер>")
-        
+
     arg = command.args.strip().lower()
 
     if not arg.isdigit():
@@ -153,7 +153,7 @@ async def set_time(message: Message , command: CommandObject):
 
 
 
-@dp.message(Command())
+@dp.message()
 async def def_user_msg(message: Message):
     await message.reply("❌У вас недостаточно прав.Только пользователи с правами администратора имеют доступ к этой команде")
 
