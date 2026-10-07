@@ -50,7 +50,7 @@ async def add_desc(message: Message , command: CommandObject):
         return await message.reply("❌Введите правильно описание.Например: /addesc <описание>")
 
     await r.rpush(PHRASES_KEY , text) #добавляет в конце списка памяти рЕдис
-    await r.persist(PHRASES_KEY) #гарантирует что LLT бесконечный будет
+    await r.persist(PHRASES_KEY) #гарантирует что LLT(время жизни) бесконечный будет
     await message.answer("Описание успешно добавлено✅")
 
 
@@ -59,12 +59,12 @@ async def add_desc(message: Message , command: CommandObject):
 @dp.message(F.text == "🗒Вывод всех описаний" , F.from_user.id == ADMIN_ID)
 async def list_desc(message: Message):
     
-    descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала до конца списка
+    descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала(0) до конца(-1) списка
 
     if not descs:
         return await message.reply("Ваш список пуст")
 
-    text = "\n".join(f"{i+1}. {d}" for i , d in enumerate(descs))
+    text = "\n".join(f"{i+1}. {d}" for i , d in enumerate(descs)) #i+1 начало с 1, а не нуля.
     await message.answer(text)
 
 
@@ -74,7 +74,7 @@ async def list_desc(message: Message):
 @dp.message(F.text == "❌Удалить последнее описание", F.from_user.id == ADMIN_ID)
 async def del_decsriprion(message: Message):
     
-    descs = await r.rpop(PHRASES_KEY)
+    descs = await r.rpop(PHRASES_KEY) #pop удаляет ласт описание
 
     if not descs:
         return await message.reply("Ваш список на данный момент пуст")
@@ -87,7 +87,7 @@ async def del_decsriprion(message: Message):
 @dp.message(F.text == "🗑Удалить все описания", F.from_user.id == ADMIN_ID)
 async def del_all_decsriprion(message: Message):
 
-    descs = await r.delete(PHRASES_KEY)
+    descs = await r.delete(PHRASES_KEY) #удаляет вообще весь список
 
     if not descs:
         return await message.reply("Ваш список на данный момент итак пуст") 
@@ -108,13 +108,13 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 
     index = int(arg) - 1 #что бы не шло с 0, а еденицы 
 
-    descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала до конца списка
+    descs = await r.lrange(PHRASES_KEY , 0 , -1) #вывод от начала до конца списка для проверки аргументов
 
     if not descs:
         return await message.reply("❌Ваш список пуст")
 
     if index < 0 or index > len(descs):
-        return await message.reply("❌У вас нет описания с таким номером")
+        return await message.reply("❌У вас нет описания с таким номером") #если ввели меньше 0 и больше числа в списке
 
     removed = descs[index] #запоменаем удаленный номер
 
@@ -130,7 +130,7 @@ async def enumerate_del_cmd(message: Message , command: CommandObject):
 async def set_time(message: Message , command: CommandObject):
     
     descs = await r.lrange(PHRASES_KEY , 0 , -1) #получаем список от начала до конца
-    arg = command.args #возвращает то что написано после команды 
+    arg = command.args 
 
     if not descs:
         return await message.reply("❌Ваш список пуст")
@@ -142,10 +142,15 @@ async def set_time(message: Message , command: CommandObject):
 
     try:
         value = int(float(arg[:-1] or arg) * {"s" : 1, "m" : 60 , "h": 3600}.get(arg[-1], 1))
+
+        #arg[:-1] or arg - срезаем букву оставляя число или если ввели только число , то принимаем его целым без среза
+        # * на еденицу времени(час, минута , секунда)
+        #get(arg[-1], 1) берёт самую последнюю букву , а 1 это деф значения без буквы времени(s,m,h)
+
     except (ValueError, KeyError):
         return await message.reply("❌Неверный формат.Введите правильный формат: /setime 6h(или 30m, 1h, 10s)")
 
-    await r.set(TIMER_KEY, value)
+    await r.set(TIMER_KEY, value) #сохраняем(set)
     await message.reply(f"⚠️Время смены описаний: {arg}")
 
 
@@ -158,20 +163,20 @@ async def def_user_msg(message: Message):
 
 async def route_descriptions():
     while True:
-        interval = int(await r.get(TIMER_KEY) or 6 * 60 * 60)
-        descs = await r.lrange(PHRASES_KEY , 0 , -1)
+        interval = int(await r.get(TIMER_KEY) or 6 * 60 * 60) #берем сохраненный интервал(get) или выбирается дефолтный
+        descs = await r.lrange(PHRASES_KEY , 0 , -1) #достаем весь список
 
         if not descs:
-            await asyncio.sleep(3600)
+            await asyncio.sleep(3600)#если нет описания то в инактив на час
             continue
 
-        desc = random.choice(descs)
+        desc = random.choice(descs)#меняем на рандом
 
         try:
             await bot.set_chat_description(chat_id=CHANNEL_ID, description=desc) #меняем описание
         except Exception as e:
             print(f"Error updating channel description: {e}")
-        await asyncio.sleep(interval) #Временной интервал
+        await asyncio.sleep(interval) #уйдет спать в заданное время
 
 
 
