@@ -11,6 +11,7 @@ import os
 
 
 load_dotenv("secret.env")
+logging.basicConfig(level=logging.INFO)
 
 
 API_TOKEN = os.getenv("API_TOKEN") #токен вашего бота
@@ -162,21 +163,37 @@ async def def_user_msg(message: Message):
 
 
 async def route_descriptions():
+    last_desc = None #последнее описание
     while True:
-        interval = int(await r.get(TIMER_KEY) or 6 * 60 * 60) #берем сохраненный интервал(get) или выбирается дефолтный
-        descs = await r.lrange(PHRASES_KEY , 0 , -1) #достаем весь список
-
-        if not descs:
-            await asyncio.sleep(3600)#если нет описания то в инактив на час
-            continue
-
-        desc = random.choice(descs)#меняем на рандом
-
         try:
-            await bot.set_chat_description(chat_id=CHANNEL_ID, description=desc) #меняем описание
-        except Exception as e:
-            print(f"Error updating channel description: {e}")
-        await asyncio.sleep(interval) #уйдет спать в заданное время
+
+            interval = int(await r.get(TIMER_KEY) or 6 * 60 * 60) #берем сохраненный интервал(get) или выбирается дефолтный
+            descs = await r.lrange(PHRASES_KEY , 0 , -1) #достаем весь список
+
+            if not descs:
+                logging.warning("Список пуст.Спим час")#логгируем лог лог лог
+                await asyncio.sleep(3600)#если нет описания то в инактив на час
+                continue
+
+            valid_desc = [d for d in descs if d != last_desc] #если в списке нет последней повтор фразы
+
+            if not valid_desc:
+                valid_desc = descs #если нет списка то создаем его на основе готового
+
+            desc = random.choice(valid_desc)#меняем на рандом
+
+            try:
+                await bot.set_chat_description(chat_id=CHANNEL_ID, description=desc) #меняем описание
+                last_desc = desc #поменяли и запонимаем фразу
+                logging.info(f"Описание изменино на {desc}")#проверяем поменялось ли описание
+
+            except Exception as e:
+                logging.error(f"Error updating channel description: {e}")
+            await asyncio.sleep(interval) #уйдет спать в заданное время
+
+        except Exception as global_e:
+            logging.critical(f"Critical error {global_e}")
+            await asyncio.sleep(60) #Спим минуту
 
 
 
