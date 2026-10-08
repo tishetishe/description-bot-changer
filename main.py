@@ -175,16 +175,16 @@ async def route_descriptions():
                 await asyncio.sleep(3600)#если нет описания то в инактив на час
                 continue
 
-            valid_desc = [d for d in descs if d != last_desc] #если в списке нет последней повтор фразы
-
+            valid_desc = [d for d in descs if d != last_desc] #выкидываем фразу если она совпала в цикле
+            #данную карусель я провел потому, что во время тестов он менял на фразу которая стояла в канале и бот крч падал
             if not valid_desc:
-                valid_desc = descs #если нет списка то создаем его на основе готового
+                valid_desc = descs #если нет списка то переключаемся на основе готового(например 1 фраза осталась)
 
             desc = random.choice(valid_desc)#меняем на рандом
 
             try:
                 await bot.set_chat_description(chat_id=CHANNEL_ID, description=desc) #меняем описание
-                last_desc = desc #поменяли и запонимаем фразу
+                last_desc = desc #запонимаем фразу после каждого круга
                 logging.info(f"Описание изменино на {desc}")#проверяем поменялось ли описание
 
             except Exception as e:
