@@ -199,7 +199,7 @@ async def route_descriptions():
 
 async def main():
     asyncio.create_task(route_descriptions())
-    await dp.start_polling(bot)
+    await dp.start_polling(bot , polling_timeout=15, allowed_updates=["message", "callback_query"])
 
 
 if __name__ == "__main__":
